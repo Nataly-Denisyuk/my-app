@@ -6,6 +6,7 @@ import {
   Field,
   InputField,
   SelectField,
+  Option,
 } from "@admiral-ds/react-ui";
 
 const DisplayContainer = styled.div`
@@ -35,9 +36,15 @@ const SomeBankForm = () => {
     assignmentNumber: "123456r",
     contractNumber: "41444001",
     clientCode: "41444000",
-    assignmentType1: "тип 1",
-    assignmentType2: "тип 2",
-    assignmentType3: "тип 3",
+    assignmentType: "0",
+    options: {
+      assignmentTypes: [
+        { value: "0", text: "--- Не выбран ---" },
+        { value: "1", text: "тип 1" },
+        { value: "2", text: "тип 2" },
+        { value: "3", text: "тип 3" },
+      ],
+    },
   }));
 
   console.log("state:", filterState);
@@ -133,14 +140,22 @@ const SomeBankForm = () => {
           <Field label="Тип поручения">
             <FlexDiv>
               <SelectField
-                value={filterState}
+                value={filterState.assignmentType}
                 onChange={(el) =>
                   setFilterState((prevState) => ({
                     ...prevState,
                     assignmentType: el.target.value,
                   }))
                 }
-              />
+              >
+                {filterState.options &&
+                  filterState.options.assignmentTypes &&
+                  filterState.options.assignmentTypes.map((o) => (
+                    <Option key={o.value} value={o.value}>
+                      {o.text}
+                    </Option>
+                  ))}
+              </SelectField>
             </FlexDiv>
           </Field>
         </DisplayContainer>
