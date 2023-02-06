@@ -1,0 +1,4 @@
+[
+  { "id": 1, "statusCode": "done", "statusName": "Исполнено" },
+  { "id": 2, "statusCode": "part_done", "statusName": "Исполнено частично" }
+]
