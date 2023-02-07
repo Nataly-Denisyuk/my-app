@@ -40,7 +40,7 @@ function Report1({ api }) {
     options: [], // options
     isLoading: false, // loading state
     inputText: "", // user input for search
-    searchText: "-", // actual seach text, after input timeout elapsed
+    searchText: "", // actual seach text, after input timeout elapsed
     value: "", // selected value
   }));
 
@@ -67,12 +67,11 @@ function Report1({ api }) {
         );
         setInstrumentsState((state) => ({
           ...state,
-          isLoading: true,
-          options: instruments.slice(0, 2),
-          //.map((i) => ({
-          //  value: i.id.toString(),
-          //  text: i.name,
-          //})),
+          isLoading: false,
+          options: instruments.slice(0, 4).map((i) => ({
+            value: i.id.toString(),
+            text: i.name,
+          })),
         }));
       } else if (instrumentsState.searchText.trim() !== "") {
         setInstrumentsState((state) => ({ ...state, isLoading: true }));
@@ -83,7 +82,7 @@ function Report1({ api }) {
           setInstrumentsState((state) => ({
             ...state,
             isLoading: false,
-            options: instruments.map((i) => ({
+            options: instruments.slice(0, 4).map((i) => ({
               value: i.id.toString(),
               text: i.name,
             })),
