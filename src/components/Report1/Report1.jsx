@@ -1,7 +1,14 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 
 import styled from "styled-components";
-import { Field, SelectField, Option } from "@admiral-ds/react-ui";
+import {
+  Field,
+  SelectField,
+  Option,
+  DateTimeDateInput,
+  DateTimeTimeInput,
+  T,
+} from "@admiral-ds/react-ui";
 
 // api
 import withApi, { apiPropTypes } from "../../hocs/withApi";
@@ -22,6 +29,13 @@ const DisplayContainer = styled.div`
   }
 `;
 
+const FlexDiv = styled.div`
+  display: flex;
+  max-width: 300px;
+`;
+
+const MAX_INSTRUMENTS = 10;
+
 function Report1({ api }) {
   // state for data init - wait while required data will be loaded
   const [state, setState] = useState({
@@ -33,6 +47,10 @@ function Report1({ api }) {
   //
   const [filterState, setFilterState] = useState(() => ({
     status: "0",
+    startDate: "12.12.2022",
+    startTime: "10:10",
+    endDate: "12.12.2023",
+    endTime: "10:10",
   }));
 
   // instruments state
@@ -68,10 +86,16 @@ function Report1({ api }) {
         setInstrumentsState((state) => ({
           ...state,
           isLoading: false,
-          options: instruments.slice(0, 4).map((i) => ({
-            value: i.id.toString(),
-            text: i.name,
-          })),
+          options: mapInstruments2Options(
+            instruments,
+            instrumentsState.searchText.trim(),
+            MAX_INSTRUMENTS
+          ),
+
+          // instruments.slice(0, 4).map((i) => ({
+          //   value: i.id.toString(),
+          //   text: i.name,
+          // })),
         }));
       } else if (instrumentsState.searchText.trim() !== "") {
         setInstrumentsState((state) => ({ ...state, isLoading: true }));
@@ -82,10 +106,15 @@ function Report1({ api }) {
           setInstrumentsState((state) => ({
             ...state,
             isLoading: false,
-            options: instruments.slice(0, 4).map((i) => ({
-              value: i.id.toString(),
-              text: i.name,
-            })),
+            options: mapInstruments2Options(
+              instruments,
+              instrumentsState.searchText.trim(),
+              MAX_INSTRUMENTS
+            ),
+            // options: instruments.slice(0, 4).map((i) => ({
+            //   value: i.id.toString(),
+            //   text: i.isin != null ? `${i.name} / ${i.isin}` : i.name,
+            // })),
           }));
         } catch (e) {
           setInstrumentsState((state) => ({
@@ -139,47 +168,134 @@ function Report1({ api }) {
   ];
 
   return (
-    <DisplayContainer>
-      <Field label="Статус">
-        <SelectField
-          value={filterState.status}
-          onChange={(el) =>
-            setFilterState((prevState) => ({
-              ...prevState,
-              status: el.target.value,
-            }))
-          }
-        >
-          {statusesOptions.map((o) => (
-            <Option key={o.value} value={o.value}>
-              {o.text}
-            </Option>
-          ))}
-        </SelectField>
-      </Field>
-      <Field label="Инструмент">
-        <SelectField
-          mode="searchSelect"
-          value={instrumentsState.value}
-          onChange={(el) =>
-            setInstrumentsState((prevState) => ({
-              ...prevState,
-              value: el.target.value,
-            }))
-          }
-          onInputChange={(el) => handleInstrumentInputChange(el.target.value)}
-          isLoading={instrumentsState.isLoading}
-          inputValue={instrumentsState.inputText}
-          width="300px"
-        >
-          {instrumentsState.options.map((o) => (
-            <Option key={o.value} value={o.value}>
-              {o.text}
-            </Option>
-          ))}
-        </SelectField>
-      </Field>
-    </DisplayContainer>
+    <div>
+      <T font="Main/L">Журнал регистрации поручений.</T>
+      <DisplayContainer>
+        <Field label="Дата начала периода">
+          <FlexDiv>
+            <DateTimeDateInput
+              value={filterState.startDate}
+              onChange={(el) =>
+                setFilterState((prevState) => ({
+                  ...prevState,
+                  startDate: el.target.value,
+                }))
+              }
+            />
+            <DateTimeTimeInput
+              value={filterState.startTime}
+              onChange={(el) =>
+                setFilterState((prevState) => ({
+                  ...prevState,
+                  startTime: el.target.value,
+                }))
+              }
+            />
+          </FlexDiv>
+        </Field>
+        <Field label="Дата окончания периода">
+          <FlexDiv>
+            <DateTimeDateInput
+              value={filterState.endDate}
+              onChange={(el) =>
+                setFilterState((prevState) => ({
+                  ...prevState,
+                  endDate: el.target.value,
+                }))
+              }
+            />
+            <DateTimeTimeInput
+              value={filterState.endTime}
+              onChange={(el) =>
+                setFilterState((prevState) => ({
+                  ...prevState,
+                  endTime: el.target.value,
+                }))
+              }
+            />
+          </FlexDiv>
+        </Field>
+        <Field label="Статус">
+          <SelectField
+            value={filterState.status}
+            onChange={(el) =>
+              setFilterState((prevState) => ({
+                ...prevState,
+                status: el.target.value,
+              }))
+            }
+          >
+            {statusesOptions.map((o) => (
+              <Option key={o.value} value={o.value}>
+                {o.text}
+              </Option>
+            ))}
+          </SelectField>
+        </Field>
+        <Field label="Инструмент">
+          <SelectField
+            mode="searchSelect"
+            value={instrumentsState.value}
+            onChange={(el) =>
+              setInstrumentsState((prevState) => ({
+                ...prevState,
+                value: el.target.value,
+              }))
+            }
+            onInputChange={(el) => handleInstrumentInputChange(el.target.value)}
+            isLoading={instrumentsState.isLoading}
+            inputValue={instrumentsState.inputText}
+            width="300px"
+          >
+            {instrumentsState.options.map((o) => (
+              <Option key={o.value} value={o.value}>
+                {o.text}
+              </Option>
+            ))}
+          </SelectField>
+        </Field>
+      </DisplayContainer>
+    </div>
+  );
+}
+
+const instr2value = (id, text) => `${id}_${text}`;
+//const value2id = (value) => value.substr(0, value.indexOf("_"));
+
+function mapInstruments2Options(instruments, filter, maxOptionsVisible = 10) {
+  const options = [];
+  const lFilter = filter.toLowerCase();
+  // найдено элементов
+  let optionsDone = 0;
+  for (let i = 0; i < instruments.length; i++) {
+    const instr = instruments[i];
+    // name
+    if (instr.name != null && instr.name.toLowerCase().indexOf(lFilter) > -1) {
+      options.push({
+        value: instr2value(instr.id, instr.name),
+        text: instr.name,
+      });
+
+      if (++optionsDone >= maxOptionsVisible) break;
+    }
+    // isin
+    if (
+      instr.isin !== null &&
+      instr.isin !== "" &&
+      (instr.name == null ||
+        instr.name.toLowerCase() !== instr.isin.toLowerCase()) && // если не совпадает с name
+      instr.isin.toLowerCase().indexOf(lFilter) > -1
+    ) {
+      options.push({
+        value: instr2value(instr.id, instr.isin),
+        text: instr.isin,
+      });
+
+      if (++optionsDone >= maxOptionsVisible) break;
+    }
+  }
+  return options.sort((a, b) =>
+    a.text.toLowerCase().localeCompare(b.text.toLowerCase())
   );
 }
 
