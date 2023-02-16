@@ -48,6 +48,7 @@ function Report1({ api }) {
   //
   const [filterState, setFilterState] = useState(() => ({
     status: [],
+    orders: [],
     startDate: "12.12.2022",
     startTime: "10:10",
     endDate: "12.12.2023",
@@ -135,8 +136,9 @@ function Report1({ api }) {
   const fetchData = useCallback(async () => {
     //setState((state) => ({ ...state, loading: true }));
     try {
-      let statuses = await api.query.execute(new StatusesQuery());
       let orders = await api.query.execute(new OrdersQuery());
+      let statuses = await api.query.execute(new StatusesQuery());
+
       setState((state) => ({
         ...state,
         loading: false,
@@ -231,13 +233,13 @@ function Report1({ api }) {
         </Field>
         <Field label="Поручение">
           <SelectField
-            value={filterState.status}
-            //multiple
+            value={filterState.orders}
+            multiple
             displayClearIcon
             onChange={(el) =>
               setFilterState((prevState) => ({
                 ...prevState,
-                status: Array.from(el.target.selectedOptions, (o) => o.value),
+                orders: Array.from(el.target.selectedOptions, (o) => o.value),
               }))
             }
           >
