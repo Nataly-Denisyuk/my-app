@@ -14,6 +14,7 @@ import {
 import withApi, { apiPropTypes } from "../../hocs/withApi";
 import InstrumentsQuery from "../../services/queries/InstrumentsQuery";
 import StatusesQuery from "../../services/queries/StatusesQuery";
+import OrdersQuery from "../../services/queries/OrdersQuery";
 
 const DisplayContainer = styled.div`
   display: flex;
@@ -46,7 +47,7 @@ function Report1({ api }) {
 
   //
   const [filterState, setFilterState] = useState(() => ({
-    status: "0",
+    status: [],
     startDate: "12.12.2022",
     startTime: "10:10",
     endDate: "12.12.2023",
@@ -142,14 +143,44 @@ function Report1({ api }) {
         data: { statuses },
       }));
     } catch (e) {
-      setState((state) => ({ ...state, loading: false, error: e, data: null }));
+      setState((state) => ({
+        ...state,
+        loading: false,
+        error: e,
+        data: null,
+      }));
     }
   }, [api.query]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+  // test orders
+  // data init
+  const ordersData = useCallback(async () => {
+    //setState(state => ({...state, loading: true}))
+    try {
+      let orders = await api.query.execute(new OrdersQuery());
+      setState((state) => ({
+        ...state,
+        loading: false,
+        error: null,
+        data: { orders },
+      }));
+    } catch (e) {
+      setState((state) => ({
+        ...state,
+        loading: false,
+        error: e,
+        data: null,
+      }));
+    }
+  }, [api.query]);
 
+  useEffect(() => {
+    ordersData();
+  }, [ordersData]);
+  // test orders
   // show loading state (spinner or something similar) while required data is loading
   if (state.loading) return <div>Loading data...</div>;
 
@@ -157,7 +188,13 @@ function Report1({ api }) {
   if (state.error) return <div>Error: {state.error.message}</div>;
 
   // --
-
+  const ordersOptions = [
+    { value: "0", text: "--- Любой ---" },
+    ...state.data.orders.map((s) => ({
+      value: s.id.toString(),
+      text: s.ordersNumber,
+    })),
+  ];
   // build statuses options with extra option
   const statusesOptions = [
     { value: "0", text: "--- Любой ---" },
@@ -215,13 +252,34 @@ function Report1({ api }) {
             />
           </FlexDiv>
         </Field>
-        <Field label="Статус">
+        <Field label="Поручение">
           <SelectField
             value={filterState.status}
+            multiple
+            displayClearIcon
             onChange={(el) =>
               setFilterState((prevState) => ({
                 ...prevState,
-                status: el.target.value,
+                status: Array.from(el.target.selectedOptions, (o) => o.value),
+              }))
+            }
+          >
+            {ordersOptions.map((o) => (
+              <Option key={o.value} value={o.value}>
+                {o.text}
+              </Option>
+            ))}
+          </SelectField>
+        </Field>
+        <Field label="Статус">
+          <SelectField
+            value={filterState.status}
+            multiple
+            displayClearIcon
+            onChange={(el) =>
+              setFilterState((prevState) => ({
+                ...prevState,
+                status: Array.from(el.target.selectedOptions, (o) => o.value),
               }))
             }
           >
@@ -236,10 +294,13 @@ function Report1({ api }) {
           <SelectField
             mode="searchSelect"
             value={instrumentsState.value}
+            multiple
+            displayClearIcon
             onChange={(el) =>
               setInstrumentsState((prevState) => ({
                 ...prevState,
                 value: el.target.value,
+                //status: Array.from(el.target.selectedOptions, (o) => o.value),
               }))
             }
             onInputChange={(el) => handleInstrumentInputChange(el.target.value)}
