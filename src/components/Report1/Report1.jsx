@@ -133,14 +133,15 @@ function Report1({ api }) {
 
   // data init
   const fetchData = useCallback(async () => {
-    //setState(state => ({...state, loading: true}))
+    //setState((state) => ({ ...state, loading: true }));
     try {
       let statuses = await api.query.execute(new StatusesQuery());
+      let orders = await api.query.execute(new OrdersQuery());
       setState((state) => ({
         ...state,
         loading: false,
         error: null,
-        data: { statuses },
+        data: { statuses, orders },
       }));
     } catch (e) {
       setState((state) => ({
@@ -156,31 +157,7 @@ function Report1({ api }) {
     fetchData();
   }, [fetchData]);
   // test orders
-  // data init
-  const ordersData = useCallback(async () => {
-    //setState(state => ({...state, loading: true}))
-    try {
-      let orders = await api.query.execute(new OrdersQuery());
-      setState((state) => ({
-        ...state,
-        loading: false,
-        error: null,
-        data: { orders },
-      }));
-    } catch (e) {
-      setState((state) => ({
-        ...state,
-        loading: false,
-        error: e,
-        data: null,
-      }));
-    }
-  }, [api.query]);
 
-  useEffect(() => {
-    ordersData();
-  }, [ordersData]);
-  // test orders
   // show loading state (spinner or something similar) while required data is loading
   if (state.loading) return <div>Loading data...</div>;
 
@@ -255,7 +232,7 @@ function Report1({ api }) {
         <Field label="Поручение">
           <SelectField
             value={filterState.status}
-            multiple
+            //multiple
             displayClearIcon
             onChange={(el) =>
               setFilterState((prevState) => ({
@@ -294,7 +271,7 @@ function Report1({ api }) {
           <SelectField
             mode="searchSelect"
             value={instrumentsState.value}
-            multiple
+            // multiple
             displayClearIcon
             onChange={(el) =>
               setInstrumentsState((prevState) => ({
