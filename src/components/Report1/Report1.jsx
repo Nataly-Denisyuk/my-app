@@ -8,8 +8,15 @@ import {
   DateTimeDateInput,
   DateTimeTimeInput,
   T,
+  Modal,
+  ModalTitle,
+  ModalContent,
+  Button,
+  Table,
 } from "@admiral-ds/react-ui";
+//-----
 
+//-----
 // api
 import withApi, { apiPropTypes } from "../../hocs/withApi";
 import InstrumentsQuery from "../../services/queries/InstrumentsQuery";
@@ -54,7 +61,9 @@ function Report1({ api }) {
     endDate: "12.12.2023",
     endTime: "10:10",
   }));
+  //----------
 
+  //----------
   // instruments state
   const [instrumentsState, setInstrumentsState] = useState(() => ({
     options: [], // options
@@ -63,6 +72,8 @@ function Report1({ api }) {
     searchText: "", // actual seach text, after input timeout elapsed
     value: "", // selected value
   }));
+
+  const [opened, setOpened] = React.useState(false);
 
   // instruments search
   const searchApplyTimeout = useRef();
@@ -187,88 +198,144 @@ function Report1({ api }) {
     <div>
       <T font="Main/L">Журнал регистрации поручений.</T>
       <DisplayContainer>
-        <Field label="Дата начала периода">
-          <FlexDiv>
-            <DateTimeDateInput
-              value={filterState.startDate}
-              onChange={(el) =>
-                setFilterState((prevState) => ({
-                  ...prevState,
-                  startDate: el.target.value,
-                }))
-              }
-            />
-            <DateTimeTimeInput
-              value={filterState.startTime}
-              onChange={(el) =>
-                setFilterState((prevState) => ({
-                  ...prevState,
-                  startTime: el.target.value,
-                }))
-              }
-            />
-          </FlexDiv>
-        </Field>
-        <Field label="Дата окончания периода">
-          <FlexDiv>
-            <DateTimeDateInput
-              value={filterState.endDate}
-              onChange={(el) =>
-                setFilterState((prevState) => ({
-                  ...prevState,
-                  endDate: el.target.value,
-                }))
-              }
-            />
-            <DateTimeTimeInput
-              value={filterState.endTime}
-              onChange={(el) =>
-                setFilterState((prevState) => ({
-                  ...prevState,
-                  endTime: el.target.value,
-                }))
-              }
-            />
-          </FlexDiv>
-        </Field>
-        <Field label="Поручение">
-          <SelectField
-            value={filterState.orders}
-            multiple
-            displayClearIcon
-            onChange={(el) =>
-              setFilterState((prevState) => ({
-                ...prevState,
-                orders: Array.from(el.target.selectedOptions, (o) => o.value),
-              }))
-            }
+        <Button onClick={() => setOpened(true)}>Параметры</Button>
+        {opened && (
+          <Modal
+            aria-labelledby="modal-title"
+            onClose={() => {
+              setOpened(false);
+            }}
+            style={{ width: 1500 }}
           >
-            {ordersOptions.map((o) => (
-              <Option key={o.value} value={o.value}>
-                {o.text}
-              </Option>
-            ))}
-          </SelectField>
-        </Field>
-        <Field label="Статус">
-          <SelectField
-            value={filterState.status}
-            multiple
-            displayClearIcon
-            onChange={(el) =>
-              setFilterState((prevState) => ({
-                ...prevState,
-                status: Array.from(el.target.selectedOptions, (o) => o.value),
-              }))
-            }
-          >
-            {statusesOptions.map((o) => (
-              <Option key={o.value} value={o.value}>
-                {o.text}
-              </Option>
-            ))}
-          </SelectField>
-        </Field>
+            <ModalTitle id="modal-title">Параметры</ModalTitle>
+            <ModalContent>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                }}
+              >
+                <Field label="Дата начала периода">
+                  <FlexDiv>
+                    <DateTimeDateInput
+                      value={filterState.startDate}
+                      onChange={(el) =>
+                        setFilterState((prevState) => ({
+                          ...prevState,
+                          startDate: el.target.value,
+                        }))
+                      }
+                    />
+                    <DateTimeTimeInput
+                      value={filterState.startTime}
+                      onChange={(el) =>
+                        setFilterState((prevState) => ({
+                          ...prevState,
+                          startTime: el.target.value,
+                        }))
+                      }
+                    />
+                  </FlexDiv>
+                </Field>
+                <Field label="Дата окончания периода">
+                  <FlexDiv>
+                    <DateTimeDateInput
+                      value={filterState.endDate}
+                      onChange={(el) =>
+                        setFilterState((prevState) => ({
+                          ...prevState,
+                          endDate: el.target.value,
+                        }))
+                      }
+                    />
+                    <DateTimeTimeInput
+                      value={filterState.endTime}
+                      onChange={(el) =>
+                        setFilterState((prevState) => ({
+                          ...prevState,
+                          endTime: el.target.value,
+                        }))
+                      }
+                    />
+                  </FlexDiv>
+                </Field>
+                <Field label="Поручение">
+                  <SelectField
+                    value={filterState.orders}
+                    multiple
+                    displayClearIcon
+                    onChange={(el) =>
+                      setFilterState((prevState) => ({
+                        ...prevState,
+                        orders: Array.from(
+                          el.target.selectedOptions,
+                          (o) => o.value
+                        ),
+                      }))
+                    }
+                  >
+                    {ordersOptions.map((o) => (
+                      <Option key={o.value} value={o.value}>
+                        {o.text}
+                      </Option>
+                    ))}
+                  </SelectField>
+                </Field>
+                <Field label="Статус">
+                  <SelectField
+                    value={filterState.status}
+                    multiple
+                    displayClearIcon
+                    onChange={(el) =>
+                      setFilterState((prevState) => ({
+                        ...prevState,
+                        status: Array.from(
+                          el.target.selectedOptions,
+                          (o) => o.value
+                        ),
+                      }))
+                    }
+                  >
+                    {statusesOptions.map((o) => (
+                      <Option key={o.value} value={o.value}>
+                        {o.text}
+                      </Option>
+                    ))}
+                  </SelectField>
+                </Field>
+
+                <Field label="Инструмент">
+                  <SelectField
+                    mode="searchSelect"
+                    value={instrumentsState.value}
+                    // multiple
+                    displayClearIcon
+                    onChange={(el) =>
+                      setInstrumentsState((prevState) => ({
+                        ...prevState,
+                        value: el.target.value,
+                        //status: Array.from(el.target.selectedOptions, (o) => o.value),
+                      }))
+                    }
+                    onInputChange={(el) =>
+                      handleInstrumentInputChange(el.target.value)
+                    }
+                    isLoading={instrumentsState.isLoading}
+                    inputValue={instrumentsState.inputText}
+                    width="300px"
+                  >
+                    {instrumentsState.options.map((o) => (
+                      <Option key={o.value} value={o.value}>
+                        {o.text}
+                      </Option>
+                    ))}
+                  </SelectField>
+                </Field>
+              </div>
+            </ModalContent>
+          </Modal>
+        )}
+
         <Field label="Инструмент">
           <SelectField
             mode="searchSelect"
